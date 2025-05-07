@@ -1,10 +1,7 @@
 import customtkinter as ctk
-from tkinter import messagebox
-from db_connection import verify_login
-from main_screen import MainScreen
+from functions.login_functions import *
 from PIL import Image
 import os
-import json
 
 class LoginScreen:
     def __init__(self, root):
@@ -35,7 +32,7 @@ class LoginScreen:
         self.font_button = ("Helvetica", 14, "bold")
         self.font_entry = ("Helvetica", 14)
         self.font_checkbox = ("Helvetica", 12)
-        self.load_credentials()
+        load_credentials(self.username_var, self.password_var, self.remember_me_var)
         self.create_login_screen()
 
     def darken_color(self, hex_color):
@@ -53,34 +50,6 @@ class LoginScreen:
 
     def on_button_leave(self, event, button, original_gradient_start, original_gradient_end):
         button.configure(fg_color=(original_gradient_start, original_gradient_end))
-
-    def load_credentials(self):
-        try:
-            if os.path.exists("login_credentials.json"):
-                with open("login_credentials.json", "r") as f:
-                    data = json.load(f)
-                    if data.get("remember_me", False):
-                        self.username_var.set(data.get("username", ""))
-                        self.password_var.set(data.get("password", ""))
-                        self.remember_me_var.set(True)
-        except Exception as e:
-            print(f"Error loading credentials: {e}")
-
-    def save_credentials(self):
-        data = {
-            "username": self.username_var.get().strip(),
-            "password": self.password_var.get().strip(),
-            "remember_me": self.remember_me_var.get()
-        }
-        try:
-            if self.remember_me_var.get():
-                with open("login_credentials.json", "w") as f:
-                    json.dump(data, f)
-            else:
-                if os.path.exists("login_credentials.json"):
-                    os.remove("login_credentials.json")
-        except Exception as e:
-            print(f"Error saving credentials: {e}")
 
     def create_login_screen(self):
         main_frame = ctk.CTkFrame(self.root, fg_color=(self.background_start, self.background_end))
@@ -168,7 +137,8 @@ class LoginScreen:
         login_button = ctk.CTkButton(
             login_frame,
             text="Login",
-            command=self.login,
+            command=lambda: login(self.username_var, self.password_var, self.root, 
+                                lambda: save_credentials(self.username_var, self.password_var, self.remember_me_var)),
             font=self.font_button,
             width=200,
             height=50,
@@ -189,19 +159,5 @@ class LoginScreen:
         )
 
     def login(self):
-        username = self.username_var.get().strip()
-        password = self.password_var.get().strip()
-        if not username or not password:
-            messagebox.showerror("Error", "Please enter both username and password")
-            return
-        try:
-            role = verify_login(username, password)
-            if role:
-                self.save_credentials()
-                for widget in self.root.winfo_children():
-                    widget.destroy()
-                MainScreen(self.root, role)
-            else:
-                messagebox.showerror("Error", "Invalid username or password")
-        except Exception as e:
-            messagebox.showerror("Error", f"An error occurred: {e}")
+        login(self.username_var, self.password_var, self.root, 
+              lambda: save_credentials(self.username_var, self.password_var, self.remember_me_var))
