@@ -3,8 +3,6 @@ from tkinter import messagebox
 from db_connection import get_db_connection, update_table_status
 from manage_staffs import ManageStaffs
 from menu_screen import MenuScreen
-from table_management_screen import TableManagementScreen
-from add_invoice_screen import AddInvoiceScreen
 from edit_invoice_screen import EditInvoiceScreen
 from paid_invoices_screen import PaidInvoicesScreen
 import os
